@@ -15,7 +15,6 @@ const GamePlay: React.FC = () => {
   } = useGameStore();
 
   const [showHintMenu, setShowHintMenu] = useState(false);
-  const [selectedHint, setSelectedHint] = useState<'consonant' | 'vowel' | 'answer' | null>(null);
 
   if (!currentWordLadder) {
     return <div>Loading...</div>;
@@ -36,7 +35,6 @@ const GamePlay: React.FC = () => {
     const costs = { consonant: 5, vowel: 5, answer: 15 };
     if (credits >= costs[type]) {
       useHint(type);
-      setSelectedHint(type);
       setShowHintMenu(false);
     }
   };

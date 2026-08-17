@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { WordLadder, getRandomWordLadder } from '../data/wordLadders';
+import type { WordLadder } from '../data/wordLadders';
+import { getRandomWordLadder } from '../data/wordLadders';
 
 export type GameDifficulty = 'easy' | 'normal' | 'hard' | 'expert';
 
@@ -43,9 +44,6 @@ const HINT_COSTS = {
   vowel: 5,
   answer: 15,
 };
-
-const PENALTY_PER_ATTEMPT = 10;
-const MAX_ATTEMPTS = 3;
 
 const calculateComboMultiplier = (consecutiveWins: number): number => {
   if (consecutiveWins >= 7) return 3.0;
@@ -110,7 +108,6 @@ export const useGameStore = create<GameState>((set) => ({
 
       if (isComplete) {
         // Game completed, calculate final score
-        const baseCost = PENALTY_PER_ATTEMPT * (state.attempts - 1);
         const deduction =
           state.attempts === 1 ? 0 : state.attempts === 2 ? 10 : 20;
         const baseScore = DIFFICULTY_POINTS[state.currentDifficulty!] - deduction;
