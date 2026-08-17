@@ -24,11 +24,18 @@ if (!existsSync(QUEUE_PATH)) {
 
 const TTS_DIR = join(VIDEO_DIR, 'public', 'tts');
 
-// make-tts.ps1 이 만들어 둔 발음 파일이 있으면 붙인다. 없으면 소리 없이 렌더된다.
-const queue = JSON.parse(readFileSync(QUEUE_PATH, 'utf8')).map((q) => {
-  const wav = `${q.id}.wav`;
-  return existsSync(join(TTS_DIR, wav)) ? { ...q, voice: wav } : q;
-});
+/** make-tts.ps1 이 만들어 둔 발음 파일이 있으면 붙인다. 없으면 소리 없이 렌더된다. */
+function withVoice(q) {
+  const word = `${q.id}.wav`;
+  const question = `${q.id}-q.wav`;
+  return {
+    ...q,
+    ...(existsSync(join(TTS_DIR, word)) ? { voice: word } : {}),
+    ...(existsSync(join(TTS_DIR, question)) ? { voiceQuestion: question } : {}),
+  };
+}
+
+const queue = JSON.parse(readFileSync(QUEUE_PATH, 'utf8')).map(withVoice);
 
 mkdirSync(MP4_DIR, { recursive: true });
 console.log(`발음 있음 ${queue.filter((q) => q.voice).length}편 / 전체 ${queue.length}편`);
@@ -43,9 +50,12 @@ let done = 0;
 for (const question of queue) {
   const outPath = join(MP4_DIR, `${question.id}.mp4`);
 
+  // 한국어 문제 형식은 question 항목이 있는 것으로 구분한다
+  const compositionId = question.question ? 'CategoryShort' : 'VocabShort';
+
   const composition = await selectComposition({
     serveUrl,
-    id: 'VocabShort',
+    id: compositionId,
     inputProps: question,
   });
 

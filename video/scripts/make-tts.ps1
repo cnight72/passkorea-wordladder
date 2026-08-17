@@ -1,13 +1,18 @@
-# out/queue.json 의 단어를 한국어 음성으로 만들어 public/tts/ 에 넣는다.
+# Generates Korean pronunciation audio for out/queue.json into public/tts/.
 #
 #   powershell -File scripts/make-tts.ps1
 #
-# 큐 파일은 건드리지 않는다. render.mjs 가 public/tts/{id}.wav 가 있는지 보고
-# 알아서 붙인다. PowerShell 5.1 의 JSON 직렬화가 배열을 망가뜨려서, 쓰기는
-# 전부 Node 쪽에 맡기는 편이 안전하다.
+# This file is deliberately ASCII-only. Windows PowerShell 5.1 reads .ps1 files as
+# ANSI unless they carry a UTF-8 BOM, and a BOM does not survive every editor, so
+# Korean comments here would eventually break the parser. Korean text belongs in
+# the data files, not in this script.
 #
-# Windows 내장 음성(Heami)이라 무료·오프라인이다. 더 자연스러운 소리가 필요하면
-# 이 스크립트만 Azure/Google 신경망 음성으로 갈아끼우면 나머지는 그대로 돈다.
+# It does not touch queue.json. render.mjs looks for public/tts/{id}.wav and
+# {id}-q.wav and attaches whatever it finds. PowerShell 5.1 mangles arrays on JSON
+# round-trip, so all JSON writing stays on the Node side.
+#
+# Uses the built-in Windows voice (Heami): free and offline. To move to a neural
+# voice later, replace only this script - nothing else depends on how the wav is made.
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Speech
@@ -17,27 +22,39 @@ $queuePath = Join-Path $videoDir 'out\queue.json'
 $ttsDir = Join-Path $videoDir 'public\tts'
 
 if (-not (Test-Path $queuePath)) {
-  Write-Error 'out/queue.json 이 없습니다. 먼저 npm run queue 를 실행하세요.'
+  Write-Error 'out/queue.json not found. Run `npm run queue` first.'
 }
 
 New-Item -ItemType Directory -Force -Path $ttsDir | Out-Null
 
-# @() 로 감싸지 않으면 원소가 하나일 때 배열이 아니라 객체로 풀린다
-$queue = @([System.IO.File]::ReadAllText($queuePath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+# ConvertFrom-Json emits the whole array as ONE pipeline item in PS 5.1, so wrapping
+# it in @() would nest it and the loop below would run exactly once. Assign directly.
+$queue = [System.IO.File]::ReadAllText($queuePath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
 
-foreach ($q in $queue) {
-  $file = "$($q.id).wav"
-  $path = Join-Path $ttsDir $file
-
+function Write-Speech([string]$text, [string]$path, [int]$rate) {
   $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
   $synth.SelectVoice('Microsoft Heami Desktop')
-  # 단어 하나만 읽으므로 조금 느리게 해야 알아듣기 쉽다
-  $synth.Rate = -2
+  $synth.Rate = $rate
   $synth.SetOutputToWaveFile($path)
-  $synth.Speak($q.word)
+  $synth.Speak($text)
   $synth.Dispose()
-
-  Write-Host "  $($q.word) -> tts/$file"
 }
 
-Write-Host "`n음성 $($queue.Count)개 생성 -> public/tts/"
+$made = 0
+foreach ($q in $queue) {
+  # Rate must be parenthesised. A bare -2 is parsed as a parameter name.
+  # A lone word needs a slower rate to stay intelligible.
+  Write-Speech $q.word (Join-Path $ttsDir "$($q.id).wav") (-2)
+  Write-Host "  $($q.id).wav"
+  $made++
+
+  # Korean-question format also gets the question sentence read aloud.
+  if ($q.PSObject.Properties.Name -contains 'question') {
+    Write-Speech $q.question (Join-Path $ttsDir "$($q.id)-q.wav") (0)
+    Write-Host "  $($q.id)-q.wav"
+    $made++
+  }
+}
+
+Write-Host ""
+Write-Host "$made wav file(s) written to public/tts/"
