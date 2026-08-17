@@ -4,12 +4,14 @@ import WordChainHome from './components/WordChainHome';
 import type { GameMode } from './components/WordChainHome';
 import VocabQuiz from './components/VocabQuiz';
 import ExamQuiz from './components/ExamQuiz';
+import ReviewQuiz from './components/ReviewQuiz';
 import ResultScreen from './components/ResultScreen';
 import Leaderboard from './components/Leaderboard';
 import type { Profile } from './lib/storage';
 import { loadProfile, saveProfile } from './lib/storage';
+import { reviewCount } from './lib/review';
 
-type GameScreen = 'home' | 'game' | 'result' | 'leaderboard';
+type GameScreen = 'home' | 'game' | 'review' | 'result' | 'leaderboard';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('home');
@@ -17,6 +19,8 @@ function App() {
   const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [isNewBest, setIsNewBest] = useState(false);
   const [mode, setMode] = useState<GameMode>({ kind: 'vocab', theme: 'all' });
+  // 홈으로 돌아올 때마다 다시 세도록 화면 전환을 의존성으로 삼는다
+  const pendingReviews = currentScreen === 'home' ? reviewCount() : 0;
 
   const persist = (next: Profile) => {
     setProfile(next);
@@ -75,7 +79,9 @@ function App() {
               initialCountry={profile.countryCode}
               bestScore={profile.bestScore}
               gamesPlayed={profile.gamesPlayed}
+              reviewCount={pendingReviews}
               onStartGame={handleStartGame}
+              onReview={() => setCurrentScreen('review')}
               onViewLeaderboard={handleViewLeaderboard}
             />
           )}
@@ -95,6 +101,8 @@ function App() {
               onCancel={handleHome}
             />
           )}
+
+          {currentScreen === 'review' && <ReviewQuiz onDone={handleHome} />}
 
           {currentScreen === 'result' && gameResult && (
             <ResultScreen

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { ThemeId, VocabQuestion } from '../data/vocab';
 import { buildVocabQuiz, getSection, themeOfSection } from '../data/vocab';
+import { addMissed } from '../lib/review';
 
 const QUESTION_COUNT = 20;
 /** 문항당 제한시간(초) */
@@ -25,6 +26,28 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ theme, onGameEnd, onCancel }) => 
 
   const question: VocabQuestion | undefined = questions?.[index];
   const answered = selected !== null;
+
+  // 같은 문항을 두 번 기록하지 않도록 (StrictMode 이중 실행 포함) 방어한다
+  const recorded = useRef<Set<number>>(new Set());
+
+  // 틀린 문항은 즉시 복습 목록에 넣는다. 중간에 그만둬도 남는다.
+  useEffect(() => {
+    if (selected === null || !question) return;
+    if (selected === question.answerIndex) return;
+    if (recorded.current.has(index)) return;
+
+    recorded.current.add(index);
+    const section = getSection(question.entry.section);
+    addMissed([
+      {
+        id: `vocab:${question.entry.word}`,
+        kind: 'vocab',
+        prompt: question.entry.word,
+        answer: question.entry.english,
+        source: `${question.entry.section} ${section?.korean ?? ''}`.trim(),
+      },
+    ]);
+  }, [selected, question, index]);
 
   // 어휘 본문은 별도 번들이라 비동기로 받아온다
   useEffect(() => {

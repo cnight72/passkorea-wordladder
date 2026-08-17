@@ -15,7 +15,10 @@ interface WordChainHomeProps {
   initialCountry: string;
   bestScore: number;
   gamesPlayed: number;
+  /** 복습 대기 중인 오답 수 */
+  reviewCount: number;
   onStartGame: (playerName: string, countryCode: string, mode: GameMode) => void;
+  onReview: () => void;
   onViewLeaderboard: () => void;
 }
 
@@ -24,7 +27,9 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
   initialCountry,
   bestScore,
   gamesPlayed,
+  reviewCount,
   onStartGame,
+  onReview,
   onViewLeaderboard,
 }) => {
   const [playerName, setPlayerName] = useState(initialName);
@@ -238,6 +243,21 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
             🚀 START GAME
             <span className="block text-xs font-normal text-blue-100">게임 시작</span>
           </button>
+
+          {reviewCount > 0 && (
+            <button
+              onClick={onReview}
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition flex items-center justify-center gap-2"
+            >
+              <span>
+                🔁 REVIEW MISTAKES
+                <span className="block text-xs font-normal text-amber-100">틀린 문제 복습</span>
+              </span>
+              <span className="bg-white text-amber-700 text-sm font-bold rounded-full px-3 py-1">
+                {reviewCount}
+              </span>
+            </button>
+          )}
 
           <button
             onClick={onViewLeaderboard}

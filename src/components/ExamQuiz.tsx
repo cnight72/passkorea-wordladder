@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { ExamQuestion, IndustryId } from '../data/exams';
 import { getIndustry, loadQuestions } from '../data/exams';
+import { addMissed } from '../lib/review';
 
 const QUESTION_COUNT = 20;
 /** 직무 문항은 지문이 길어 어휘 퀴즈보다 넉넉하게 준다 */
@@ -35,6 +36,27 @@ const ExamQuiz: React.FC<ExamQuizProps> = ({ industry, onGameEnd, onCancel }) =>
   const info = getIndustry(industry);
   const question = questions?.[index];
   const answered = selected !== null;
+
+  // 같은 문항을 두 번 기록하지 않도록 (StrictMode 이중 실행 포함) 방어한다
+  const recorded = useRef<Set<number>>(new Set());
+
+  // 틀린 문항은 즉시 복습 목록에 넣는다. 중간에 그만둬도 남는다.
+  useEffect(() => {
+    if (selected === null || !question) return;
+    if (selected === question.answer) return;
+    if (recorded.current.has(index)) return;
+
+    recorded.current.add(index);
+    addMissed([
+      {
+        id: `exam:${question.id}`,
+        kind: 'exam',
+        prompt: question.question,
+        answer: question.choices[question.answer],
+        source: info?.korean ?? industry,
+      },
+    ]);
+  }, [selected, question, index, info, industry]);
 
   // 업종별 문항은 별도 번들이라 비동기로 받아온다
   useEffect(() => {
