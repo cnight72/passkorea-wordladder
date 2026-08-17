@@ -22,14 +22,14 @@ export interface Industry {
 
 /** 고용허가제 8개 제조 업종 */
 export const INDUSTRIES: Industry[] = [
-  { id: 'machinery', korean: "기계·금형 제조업", english: "Machinery & Molding", emoji: '⚙️', count: 180 },
-  { id: 'metal', korean: "금속·금속제품 제조업", english: "Metal Products", emoji: '🔩', count: 197 },
-  { id: 'electronics', korean: "전기·전자제품 제조업", english: "Electronics & Electricity", emoji: '🔌', count: 181 },
-  { id: 'chemical', korean: "화학물·화학제품 제조업", english: "Chemicals", emoji: '🧪', count: 195 },
-  { id: 'textile', korean: "섬유·의복 제조업", english: "Textile & Sewing", emoji: '🧵', count: 193 },
-  { id: 'food', korean: "음식료품 제조업", english: "Food Products", emoji: '🍱', count: 200 },
-  { id: 'wood', korean: "종이·목재 제조업", english: "Pulp, Paper & Wood", emoji: '🪵', count: 196 },
-  { id: 'rubber', korean: "고무·플라스틱 제조업", english: "Rubber & Plastic", emoji: '🧴', count: 197 },
+  { id: 'machinery', korean: "기계·금형 제조업", english: "Machinery & Molding", emoji: '⚙️', count: 165 },
+  { id: 'metal', korean: "금속·금속제품 제조업", english: "Metal Products", emoji: '🔩', count: 165 },
+  { id: 'electronics', korean: "전기·전자제품 제조업", english: "Electronics & Electricity", emoji: '🔌', count: 144 },
+  { id: 'chemical', korean: "화학물·화학제품 제조업", english: "Chemicals", emoji: '🧪', count: 161 },
+  { id: 'textile', korean: "섬유·의복 제조업", english: "Textile & Sewing", emoji: '🧵', count: 181 },
+  { id: 'food', korean: "음식료품 제조업", english: "Food Products", emoji: '🍱', count: 191 },
+  { id: 'wood', korean: "종이·목재 제조업", english: "Pulp, Paper & Wood", emoji: '🪵', count: 185 },
+  { id: 'rubber', korean: "고무·플라스틱 제조업", english: "Rubber & Plastic", emoji: '🧴', count: 170 },
 ];
 
 export interface ExamQuestion {
