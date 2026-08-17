@@ -1,7 +1,9 @@
 import React from 'react';
 import {
   AbsoluteFill,
+  Audio,
   Img,
+  Sequence,
   interpolate,
   spring,
   staticFile,
@@ -167,6 +169,37 @@ const Countdown: React.FC = () => {
   );
 };
 
+/**
+ * 소리는 세 겹이다.
+ * 발음  — 단어가 나올 때 한 번, 정답을 볼 때 한 번. 두 번 들려주는 게 핵심이다.
+ * 틱    — 마지막 3초에만. 처음부터 깔면 피로하다.
+ * 딩    — 정답 공개.
+ */
+const Sound: React.FC<{ voice?: string }> = ({ voice }) => (
+  <>
+    {voice ? (
+      <>
+        <Sequence from={SCENE.hook + 20} name="발음(문제)">
+          <Audio src={staticFile(`tts/${voice}`)} />
+        </Sequence>
+        <Sequence from={SCENE.reveal + 25} name="발음(정답)">
+          <Audio src={staticFile(`tts/${voice}`)} />
+        </Sequence>
+      </>
+    ) : null}
+
+    {[90, 60, 30].map((before) => (
+      <Sequence key={before} from={SCENE.reveal - before} durationInFrames={10} name="틱">
+        <Audio src={staticFile('sfx/tick.wav')} volume={0.3} />
+      </Sequence>
+    ))}
+
+    <Sequence from={SCENE.reveal} name="딩">
+      <Audio src={staticFile('sfx/ding.wav')} volume={0.45} />
+    </Sequence>
+  </>
+);
+
 export const VocabShort: React.FC<ShortQuestion> = ({
   word,
   choices,
@@ -174,6 +207,7 @@ export const VocabShort: React.FC<ShortQuestion> = ({
   topic,
   background,
   cta,
+  voice,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -184,6 +218,7 @@ export const VocabShort: React.FC<ShortQuestion> = ({
 
   return (
     <AbsoluteFill style={{ fontFamily: FONT }}>
+      <Sound voice={voice} />
       <Background background={background} />
 
       <AbsoluteFill style={{ padding: '110px 64px 64px', display: 'flex', flexDirection: 'column' }}>

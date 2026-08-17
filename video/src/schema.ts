@@ -14,6 +14,8 @@ export interface ShortQuestion {
   background?: string;
   /** 영상 끝 CTA 에 넣을 주소 */
   cta: string;
+  /** video/public/tts/ 안의 발음 파일명. scripts/make-tts.ps1 이 채운다. */
+  voice?: string;
 }
 
 /** 30fps · 24초 = 720프레임. 씬 경계는 컴포지션과 자막 생성이 함께 쓴다. */
