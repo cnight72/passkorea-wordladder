@@ -20,6 +20,7 @@ interface WordChainHomeProps {
   onStartGame: (playerName: string, countryCode: string, mode: GameMode) => void;
   onReview: () => void;
   onViewLeaderboard: () => void;
+  onAbout: () => void;
 }
 
 const WordChainHome: React.FC<WordChainHomeProps> = ({
@@ -31,6 +32,7 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
   onStartGame,
   onReview,
   onViewLeaderboard,
+  onAbout,
 }) => {
   const [playerName, setPlayerName] = useState(initialName);
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
@@ -228,10 +230,6 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
             ))}
           </div>
 
-          <p className="text-xs text-gray-500 text-center mt-3">
-            From the official EPS-TOPIK Standard Korean Textbook.
-            <span className="block text-gray-400">EPS-TOPIK 한국어 표준교재 수록 어휘입니다.</span>
-          </p>
         </div>
         )}
 
@@ -294,6 +292,22 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
               </span>
             </li>
           </ol>
+        </div>
+
+        <div className="mt-6 pb-4 text-center">
+          <p className="text-xs text-gray-500">
+            Vocabulary and questions from the official EPS-TOPIK materials
+            published by HRD Korea.
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            한국산업인력공단이 발행한 EPS-TOPIK 표준교재와 공개문제를 사용합니다.
+          </p>
+          <button
+            onClick={onAbout}
+            className="mt-3 text-xs text-blue-600 underline"
+          >
+            About & sources / 앱 정보 및 출처
+          </button>
         </div>
       </div>
     </div>

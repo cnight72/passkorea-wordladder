@@ -7,12 +7,13 @@ import ExamQuiz from './components/ExamQuiz';
 import ReviewQuiz from './components/ReviewQuiz';
 import ResultScreen from './components/ResultScreen';
 import Leaderboard from './components/Leaderboard';
+import AboutScreen from './components/AboutScreen';
 import type { Profile } from './lib/storage';
 import { loadProfile, saveProfile } from './lib/storage';
 import { reviewCount } from './lib/review';
 import { submitScore } from './lib/leaderboard';
 
-type GameScreen = 'home' | 'game' | 'review' | 'result' | 'leaderboard';
+type GameScreen = 'home' | 'game' | 'review' | 'result' | 'leaderboard' | 'about';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('home');
@@ -88,6 +89,7 @@ function App() {
               onStartGame={handleStartGame}
               onReview={() => setCurrentScreen('review')}
               onViewLeaderboard={handleViewLeaderboard}
+              onAbout={() => setCurrentScreen('about')}
             />
           )}
 
@@ -108,6 +110,8 @@ function App() {
           )}
 
           {currentScreen === 'review' && <ReviewQuiz onDone={handleHome} />}
+
+          {currentScreen === 'about' && <AboutScreen onBack={handleHome} />}
 
           {currentScreen === 'result' && gameResult && (
             <ResultScreen
