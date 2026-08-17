@@ -1,31 +1,35 @@
 import './App.css';
-import { useGameStore } from './store/gameStore';
-import GameStart from './components/GameStart';
-import GamePlay from './components/GamePlay';
+import { useEffect } from 'react';
+import { useCrosswordStore } from './store/crosswordStore';
+import Home from './components/Home';
+import CrosswordGrid from './components/CrosswordGrid';
+import ResultScreen from './components/ResultScreen';
 
 function App() {
-  const gameStatus = useGameStore((state) => state.gameStatus);
-  const resetGame = useGameStore((state) => state.resetGame);
+  const gameStatus = useCrosswordStore((state) => state.gameStatus);
+  const currentCrossword = useCrosswordStore((state) => state.currentCrossword);
+  const setElapsedTime = useCrosswordStore((state) => state.setElapsedTime);
+  const startTime = useCrosswordStore((state) => state.startTime);
+
+  // 타이머: 게임 진행 중 시간 업데이트
+  useEffect(() => {
+    if (gameStatus !== 'playing' || !startTime) return;
+
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      setElapsedTime(elapsed);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameStatus, startTime, setElapsedTime]);
 
   return (
     <div className="app">
-      {gameStatus === 'idle' && <GameStart />}
-      {gameStatus === 'playing' && <GamePlay />}
-      {gameStatus === 'completed' && (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">
-              게임 완료! 🎉
-            </h1>
-            <button
-              onClick={resetGame}
-              className="px-8 py-4 bg-blue-500 text-white rounded-lg font-bold text-lg hover:bg-blue-600"
-            >
-              다시 시작
-            </button>
-          </div>
-        </div>
+      {gameStatus === 'idle' && <Home />}
+      {gameStatus === 'playing' && currentCrossword && (
+        <CrosswordGrid crossword={currentCrossword} />
       )}
+      {gameStatus === 'completed' && <ResultScreen />}
     </div>
   );
 }
