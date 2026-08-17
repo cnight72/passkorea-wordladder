@@ -1,11 +1,12 @@
 import './App.css';
 import { useState } from 'react';
 import WordChainHome from './components/WordChainHome';
-import WordChainGame from './components/WordChainGame';
+import VocabQuiz from './components/VocabQuiz';
 import ResultScreen from './components/ResultScreen';
 import Leaderboard from './components/Leaderboard';
 import type { Profile } from './lib/storage';
 import { loadProfile, saveProfile } from './lib/storage';
+import type { CategoryId } from './data/words';
 
 type GameScreen = 'home' | 'game' | 'result' | 'leaderboard';
 
@@ -14,14 +15,16 @@ function App() {
   const [gameResult, setGameResult] = useState<{ score: number; words: string[] } | null>(null);
   const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [isNewBest, setIsNewBest] = useState(false);
+  const [category, setCategory] = useState<CategoryId | 'all'>('all');
 
   const persist = (next: Profile) => {
     setProfile(next);
     saveProfile(next);
   };
 
-  const handleStartGame = (name: string, country: string) => {
+  const handleStartGame = (name: string, country: string, topic: CategoryId | 'all') => {
     persist({ ...profile, playerName: name.trim() || 'Player', countryCode: country });
+    setCategory(topic);
     setCurrentScreen('game');
   };
 
@@ -77,7 +80,8 @@ function App() {
           )}
 
           {currentScreen === 'game' && (
-            <WordChainGame
+            <VocabQuiz
+              category={category}
               onGameEnd={handleGameEnd}
               onCancel={handleHome}
             />

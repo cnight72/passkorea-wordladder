@@ -67,13 +67,13 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600">Words Used</p>
-              <p className="text-xs text-gray-400 mb-1">사용한 단어</p>
+              <p className="text-sm text-gray-600">Correct</p>
+              <p className="text-xs text-gray-400 mb-1">맞힌 문제</p>
               <p className="text-3xl font-bold text-blue-600">{words.length}</p>
             </div>
             <div className="bg-purple-50 rounded-lg p-4 text-center">
               <p className="text-sm text-gray-600">Avg. Score</p>
-              <p className="text-xs text-gray-400 mb-1">평균 점수</p>
+              <p className="text-xs text-gray-400 mb-1">문제당 평균</p>
               <p className="text-3xl font-bold text-purple-600">
                 {words.length > 0 ? Math.round(score / words.length) : 0}
               </p>
@@ -81,8 +81,8 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm font-bold text-gray-800">📚 Words Used</p>
-            <p className="text-xs text-gray-500 mb-3">사용한 단어</p>
+            <p className="text-sm font-bold text-gray-800">📚 Words You Got Right</p>
+            <p className="text-xs text-gray-500 mb-3">맞힌 단어</p>
             <div className="flex flex-wrap gap-2">
               {words.map((word, idx) => (
                 <span
