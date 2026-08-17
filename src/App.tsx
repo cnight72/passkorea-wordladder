@@ -10,6 +10,7 @@ import Leaderboard from './components/Leaderboard';
 import type { Profile } from './lib/storage';
 import { loadProfile, saveProfile } from './lib/storage';
 import { reviewCount } from './lib/review';
+import { submitScore } from './lib/leaderboard';
 
 type GameScreen = 'home' | 'game' | 'review' | 'result' | 'leaderboard';
 
@@ -35,15 +36,19 @@ function App() {
 
   const handleGameEnd = (score: number, words: string[]) => {
     const beatsBest = score > profile.bestScore;
-
-    setGameResult({ score, words });
-    setIsNewBest(beatsBest);
-    persist({
+    const next: Profile = {
       ...profile,
       bestScore: beatsBest ? score : profile.bestScore,
       gamesPlayed: profile.gamesPlayed + 1,
-    });
+    };
+
+    setGameResult({ score, words });
+    setIsNewBest(beatsBest);
+    persist(next);
     setCurrentScreen('result');
+
+    // 리더보드 반영은 실패해도 게임 진행을 막지 않는다
+    void submitScore(next);
   };
 
   const handlePlayAgain = () => {

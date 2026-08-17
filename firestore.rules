@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Firebase 콘솔 → Firestore Database → 규칙 탭에 붙여넣고 게시하세요.
+// 테스트 모드(누구나 읽기·쓰기·삭제 가능)를 반드시 이 규칙으로 교체해야 합니다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /players/{uid} {
+      // 리더보드는 누구나 볼 수 있어야 한다
+      allow read: if true;
+
+      // 자기 문서만 쓸 수 있다. 남의 점수는 건드리지 못한다.
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && isValidPlayer(request.resource.data);
+
+      // 삭제는 허용하지 않는다
+      allow delete: if false;
+    }
+
+    // 그 외 경로는 전부 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidPlayer(data) {
+      return data.keys().hasOnly(['name', 'country', 'bestScore', 'gamesPlayed', 'updatedAt'])
+        && data.name is string
+        && data.name.size() <= 20
+        && data.country is string
+        && data.country.size() == 2
+        && data.bestScore is int
+        && data.bestScore >= 0
+        // 20문항 x (정답 50 + 보너스 30) = 1600 이 이론상 최대치
+        && data.bestScore <= 1600
+        && data.gamesPlayed is int
+        && data.gamesPlayed >= 0;
+    }
+  }
+}
