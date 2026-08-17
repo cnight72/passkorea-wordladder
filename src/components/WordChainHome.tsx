@@ -50,9 +50,9 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
           <div className="inline-block bg-blue-700 text-white rounded-full px-3 py-1 text-xs font-bold tracking-wide mb-3">
             EPS-TOPIK
           </div>
-          <h2 className="text-2xl font-semibold mb-2 text-gray-800">Vocabulary Quiz</h2>
-          <p className="text-gray-600">Master the words that matter on the exam!</p>
-          <p className="text-gray-500 text-sm">시험에 나오는 단어를 정복하세요!</p>
+          <h2 className="text-2xl font-semibold mb-2 text-gray-800">Exam Practice</h2>
+          <p className="text-gray-600">Vocabulary and job skills</p>
+          <p className="text-gray-500 text-sm">어휘와 직무, 시험 대비를 한 곳에서</p>
         </div>
       </div>
 
@@ -60,10 +60,10 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
         <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-5 mb-6">
           <p className="text-2xl text-center mb-2">🎯</p>
           <p className="text-sm text-gray-800 font-semibold text-center">
-            Practice the Korean words that appear most often on the EPS-TOPIK exam.
+            Study with the official Standard Korean Textbook and past exam questions.
           </p>
           <p className="text-xs text-gray-600 text-center mt-1">
-            EPS-TOPIK 시험에 자주 나오는 단어 위주로 학습합니다.
+            EPS-TOPIK 표준교재 어휘와 공개문제로 학습합니다.
           </p>
 
           <div className="border-t border-amber-200 my-3"></div>
@@ -254,9 +254,9 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
           <ol className="text-sm text-gray-700 space-y-3">
             <li>
               <span className="font-bold text-blue-600 mr-1">1.</span>
-              20 questions — choose the correct meaning of each Korean word
+              20 questions — choose the correct answer
               <span className="block text-xs text-gray-500 ml-4">
-                20문제 — 한국어 단어의 뜻을 고르세요
+                20문제 — 알맞은 답을 고르세요
               </span>
             </li>
             <li>
