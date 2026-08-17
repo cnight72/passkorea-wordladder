@@ -17,18 +17,18 @@ import { loadProfile, saveProfile } from './lib/storage';
 import { reviewCount } from './lib/review';
 import { submitScore } from './lib/leaderboard';
 
-type GameScreen = 'home' | 'game' | 'review' | 'result' | 'leaderboard' | 'about' | 'shared';
+/** 'settings'는 예전 홈 화면. 이름·국가·주제를 바꿀 때만 들어간다. */
+type GameScreen = 'settings' | 'game' | 'review' | 'result' | 'leaderboard' | 'about' | 'shared';
 
 /** 쇼츠 링크로 들어왔는지 최초 1회만 판별한다 */
 const initialLink: DeepLink | null = parseDeepLink(window.location.search);
 
-/** 단일 문항 링크는 그 문항부터, 주제·업종 링크는 곧바로 퀴즈로 보낸다 */
+/**
+ * 단일 문항 링크는 그 문항부터, 그 외에는 곧바로 퀴즈로 보낸다.
+ * 심심풀이로 들어온 사람에게 설정부터 요구하면 첫 문제를 보기 전에 나간다.
+ */
 const initialScreen: GameScreen =
-  initialLink?.kind === 'vocabWord' || initialLink?.kind === 'examQuestion'
-    ? 'shared'
-    : initialLink
-      ? 'game'
-      : 'home';
+  initialLink?.kind === 'vocabWord' || initialLink?.kind === 'examQuestion' ? 'shared' : 'game';
 
 const initialMode: GameMode =
   initialLink?.kind === 'vocabTheme'
@@ -44,8 +44,8 @@ function App() {
   const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [isNewBest, setIsNewBest] = useState(false);
   const [mode, setMode] = useState<GameMode>(initialMode);
-  // 홈으로 돌아올 때마다 다시 세도록 화면 전환을 의존성으로 삼는다
-  const pendingReviews = currentScreen === 'home' ? reviewCount() : 0;
+  // 설정 화면에 들어올 때마다 다시 세도록 화면 전환을 의존성으로 삼는다
+  const pendingReviews = currentScreen === 'settings' ? reviewCount() : 0;
 
   const persist = (next: Profile) => {
     setProfile(next);
@@ -53,7 +53,8 @@ function App() {
   };
 
   const handleStartGame = (name: string, country: string, selectedMode: GameMode) => {
-    persist({ ...profile, playerName: name.trim() || 'Player', countryCode: country });
+    // 이름은 비워둘 수 있다. 리더보드에 올릴 때만 필요하다.
+    persist({ ...profile, playerName: name.trim(), countryCode: country });
     setMode(selectedMode);
     setCurrentScreen('game');
   };
@@ -85,12 +86,20 @@ function App() {
     setCurrentScreen('leaderboard');
   };
 
+  /** 문제 화면으로 돌아간다. 이 앱의 기본 자리는 설정이 아니라 퀴즈다. */
   const handleHome = () => {
     setGameResult(null);
     setIsNewBest(false);
     // 새로고침했을 때 링크로 들어온 문항이 다시 뜨지 않도록 주소창을 정리한다
     clearDeepLink();
-    setCurrentScreen('home');
+    setCurrentScreen('game');
+  };
+
+  const handleSettings = () => {
+    setGameResult(null);
+    setIsNewBest(false);
+    clearDeepLink();
+    setCurrentScreen('settings');
   };
 
   /** 쇼츠에서 본 문항을 푼 뒤 이어서 전체 퀴즈로 */
@@ -114,7 +123,7 @@ function App() {
             <div className="w-24 h-4 bg-gray-800 rounded-full"></div>
           </div>
 
-          {currentScreen === 'home' && (
+          {currentScreen === 'settings' && (
             <WordChainHome
               initialName={profile.playerName}
               initialCountry={profile.countryCode}
@@ -132,7 +141,8 @@ function App() {
             <VocabQuiz
               theme={mode.theme}
               onGameEnd={handleGameEnd}
-              onCancel={handleHome}
+              onCancel={handleSettings}
+              onSettings={handleSettings}
             />
           )}
 
@@ -140,7 +150,8 @@ function App() {
             <ExamQuiz
               industry={mode.industry}
               onGameEnd={handleGameEnd}
-              onCancel={handleHome}
+              onCancel={handleSettings}
+              onSettings={handleSettings}
             />
           )}
 
@@ -167,6 +178,7 @@ function App() {
               onPlayAgain={handlePlayAgain}
               onViewLeaderboard={handleViewLeaderboard}
               onHome={handleHome}
+              onJoinLeaderboard={handleSettings}
             />
           )}
 

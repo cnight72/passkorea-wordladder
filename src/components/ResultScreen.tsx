@@ -10,6 +10,8 @@ interface ResultScreenProps {
   onPlayAgain: () => void;
   onViewLeaderboard: () => void;
   onHome: () => void;
+  /** 이름이 없을 때 리더보드 참여를 위해 설정으로 보낸다 */
+  onJoinLeaderboard: () => void;
 }
 
 const ResultScreen: React.FC<ResultScreenProps> = ({
@@ -22,8 +24,10 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
   onPlayAgain,
   onViewLeaderboard,
   onHome,
+  onJoinLeaderboard,
 }) => {
   const country = COUNTRIES.find((c) => c.code === countryCode);
+  const hasName = playerName.trim().length > 0;
 
   const getMedalEmoji = (score: number) => {
     if (score >= 500) return '🥇';
@@ -39,11 +43,13 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           <p className="text-5xl mb-4">{getMedalEmoji(score)}</p>
           <h1 className="text-4xl font-bold mb-1">Game Over!</h1>
           <p className="text-green-200 text-sm mb-3">게임 종료</p>
-          <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-4 py-2">
-            <span className="text-2xl">{country?.flag ?? '🏳️'}</span>
-            <span className="font-semibold">{playerName}</span>
-            <span className="text-green-100 text-sm">{country?.name ?? countryCode}</span>
-          </div>
+          {hasName && (
+            <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-4 py-2">
+              <span className="text-2xl">{country?.flag ?? '🏳️'}</span>
+              <span className="font-semibold">{playerName}</span>
+              <span className="text-green-100 text-sm">{country?.name ?? countryCode}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -95,6 +101,25 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
             </div>
           </div>
         </div>
+
+        {!hasName && (
+          <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-5 mb-6 text-center">
+            <p className="text-3xl mb-2">🏆</p>
+            <p className="text-sm font-bold text-purple-900">
+              Put your country on the leaderboard!
+            </p>
+            <p className="text-xs text-gray-600 mb-4">
+              이름과 국가를 정하면 국가대항전에 참여합니다
+            </p>
+            <button
+              onClick={onJoinLeaderboard}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition"
+            >
+              JOIN — takes 10 seconds
+              <span className="block text-xs font-normal text-purple-100">참여하기 — 10초면 됩니다</span>
+            </button>
+          </div>
+        )}
 
         <div className="space-y-3">
           <button

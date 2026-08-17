@@ -106,12 +106,18 @@ function pickDistractors(all: VocabEntry[], entry: VocabEntry): string[] {
   );
 }
 
+/**
+ * 문제를 만든다. exclude에 담긴 단어는 제외해 이어서 풀 때 같은 문제가 다시 나오지 않게 한다.
+ * 남은 단어가 없으면 빈 배열을 돌려주고, 호출하는 쪽이 처음부터 다시 돌린다.
+ */
 export async function buildVocabQuiz(
   count: number,
-  themeId: ThemeId | 'all'
+  themeId: ThemeId | 'all',
+  exclude?: ReadonlySet<string>
 ): Promise<VocabQuestion[]> {
   const all = await loadVocab();
-  const pool = filterByTheme(all, themeId);
+  const themed = filterByTheme(all, themeId);
+  const pool = exclude?.size ? themed.filter((e) => !exclude.has(e.word)) : themed;
   const selected = shuffle(pool).slice(0, Math.min(count, pool.length));
 
   return selected.map((entry) => {
