@@ -28,7 +28,6 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({ crossword }) => {
   ) => {
     const char = e.key;
 
-    // 한글 입력
     if (/^[가-힣]$/.test(char)) {
       setCellAnswer(row, col, char);
       moveToNextCell(row, col);
@@ -54,13 +53,6 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({ crossword }) => {
     let nextRow = row;
     let nextCol = col + 1;
 
-    // 다음 행으로 이동
-    if (nextCol >= crossword.size) {
-      nextCol = 0;
-      nextRow += 1;
-    }
-
-    // 검은색 셀 건너뛰기
     while (
       nextRow < crossword.size &&
       (crossword.grid[nextRow][nextCol]?.isBlank ||
@@ -82,13 +74,6 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({ crossword }) => {
     let prevRow = row;
     let prevCol = col - 1;
 
-    // 이전 행으로 이동
-    if (prevCol < 0) {
-      prevCol = crossword.size - 1;
-      prevRow -= 1;
-    }
-
-    // 검은색 셀 건너뛰기
     while (
       prevRow >= 0 &&
       (crossword.grid[prevRow][prevCol]?.isBlank ||
@@ -111,134 +96,170 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({ crossword }) => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
-      {/* Header */}
-      <div className="text-center mb-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          {crossword.title}
-        </h1>
-        <p className="text-gray-600">{crossword.topic}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
-      {/* Grid */}
-      <div className="flex justify-center mb-6">
-        <div
-          className="inline-grid gap-0 border-4 border-gray-800 bg-white"
-          style={{
-            gridTemplateColumns: `repeat(${crossword.size}, 1fr)`,
-            width: `min(100%, ${crossword.size * 50}px)`,
-          }}
-        >
-          {crossword.grid.map((row, rowIdx) =>
-            row.map((cell, colIdx) => {
-              const isSelected =
-                selectedCell?.[0] === rowIdx && selectedCell?.[1] === colIdx;
-              const answer = userAnswers[rowIdx]?.[colIdx] || '';
+      <div className="w-full max-w-4xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-black text-white mb-2 drop-shadow-lg">
+            {crossword.title}
+          </h1>
+          <p className="text-xl text-gray-300 font-semibold">{crossword.topic}</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <div className="bg-slate-800/50 rounded-lg px-4 py-2 border border-slate-700">
+              <p className="text-gray-400 text-sm">난이도</p>
+              <p className="text-white font-bold">
+                {crossword.difficulty === 'easy' ? '초급 (Easy)' : '중급 (Normal)'}
+              </p>
+            </div>
+            <div className="bg-slate-800/50 rounded-lg px-4 py-2 border border-slate-700">
+              <p className="text-gray-400 text-sm">그리드 크기</p>
+              <p className="text-white font-bold">{crossword.size}×{crossword.size}</p>
+            </div>
+          </div>
+        </div>
 
-              if (cell.isBlank) {
-                return (
-                  <div
-                    key={`${rowIdx}-${colIdx}`}
-                    className="aspect-square bg-gray-800"
-                  />
-                );
-              }
+        {/* Grid */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 p-4 rounded-xl shadow-2xl border border-slate-600">
+            <div
+              className="inline-grid gap-0 border-4 border-slate-900 bg-slate-950"
+              style={{
+                gridTemplateColumns: `repeat(${crossword.size}, 1fr)`,
+                width: `min(100%, ${crossword.size * 50}px)`,
+              }}
+            >
+              {crossword.grid.map((row, rowIdx) =>
+                row.map((cell, colIdx) => {
+                  const isSelected =
+                    selectedCell?.[0] === rowIdx && selectedCell?.[1] === colIdx;
+                  const answer = userAnswers[rowIdx]?.[colIdx] || '';
 
-              return (
-                <div
-                  key={`${rowIdx}-${colIdx}`}
-                  onClick={() => handleCellClick(rowIdx, colIdx)}
-                  className={`aspect-square border border-gray-400 flex flex-col items-center justify-center cursor-pointer relative transition-colors ${
-                    isSelected ? 'bg-yellow-200' : 'bg-white'
-                  }`}
-                >
-                  {cell.number && (
-                    <span className="absolute top-0 left-0 text-xs font-bold p-1 text-gray-700">
-                      {cell.number}
-                    </span>
-                  )}
-                  <input
-                    type="text"
-                    value={answer}
-                    onChange={(e) =>
-                      setCellAnswer(rowIdx, colIdx, e.target.value)
-                    }
-                    onKeyDown={(e) => handleKeyDown(e, rowIdx, colIdx)}
-                    onFocus={() => setSelectedCell([rowIdx, colIdx])}
-                    maxLength={1}
-                    className="w-full h-full text-center text-2xl font-bold border-none outline-none bg-transparent"
-                    autoFocus={isSelected}
-                  />
+                  if (cell.isBlank) {
+                    return (
+                      <div
+                        key={`${rowIdx}-${colIdx}`}
+                        className="aspect-square bg-slate-900"
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={`${rowIdx}-${colIdx}`}
+                      onClick={() => handleCellClick(rowIdx, colIdx)}
+                      className={`aspect-square border-2 flex flex-col items-center justify-center cursor-pointer relative transition-all ${
+                        isSelected
+                          ? 'bg-yellow-400 border-yellow-500 shadow-lg shadow-yellow-400/50'
+                          : 'bg-white border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {cell.number && (
+                        <span className="absolute top-0.5 left-0.5 text-xs font-bold text-gray-700 leading-none">
+                          {cell.number}
+                        </span>
+                      )}
+                      <input
+                        type="text"
+                        value={answer}
+                        onChange={(e) =>
+                          setCellAnswer(rowIdx, colIdx, e.target.value)
+                        }
+                        onKeyDown={(e) => handleKeyDown(e, rowIdx, colIdx)}
+                        onFocus={() => setSelectedCell([rowIdx, colIdx])}
+                        maxLength={1}
+                        className="w-full h-full text-center text-2xl font-bold border-none outline-none bg-transparent"
+                        autoFocus={isSelected}
+                      />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Clues */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Across Clues */}
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-xl p-6 shadow-xl border border-slate-600">
+            <h3 className="text-xl font-bold mb-4 text-white flex items-center">
+              <span className="text-2xl mr-2">→</span>가로 문제
+            </h3>
+            <div className="space-y-3">
+              {crossword.clues.across.map((clue) => (
+                <div key={clue.number} className="flex gap-3 text-gray-200">
+                  <span className="font-bold text-blue-400 min-w-6">{clue.number}.</span>
+                  <span>{clue.text}</span>
                 </div>
-              );
-            })
-          )}
-        </div>
-      </div>
+              ))}
+            </div>
+          </div>
 
-      {/* Clues */}
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
-        {/* Across Clues */}
-        <div className="bg-white rounded-lg p-4 shadow-md">
-          <h3 className="text-lg font-bold mb-3 text-gray-800">→ 가로</h3>
-          <div className="space-y-2">
-            {crossword.clues.across.map((clue) => (
-              <div key={clue.number} className="text-sm">
-                <span className="font-bold text-blue-600">{clue.number}.</span>{' '}
-                {clue.text}
-              </div>
-            ))}
+          {/* Down Clues */}
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-xl p-6 shadow-xl border border-slate-600">
+            <h3 className="text-xl font-bold mb-4 text-white flex items-center">
+              <span className="text-2xl mr-2">↓</span>세로 문제
+            </h3>
+            <div className="space-y-3">
+              {crossword.clues.down.map((clue) => (
+                <div key={clue.number} className="flex gap-3 text-gray-200">
+                  <span className="font-bold text-red-400 min-w-6">{clue.number}.</span>
+                  <span>{clue.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Down Clues */}
-        <div className="bg-white rounded-lg p-4 shadow-md">
-          <h3 className="text-lg font-bold mb-3 text-gray-800">↓ 세로</h3>
-          <div className="space-y-2">
-            {crossword.clues.down.map((clue) => (
-              <div key={clue.number} className="text-sm">
-                <span className="font-bold text-red-600">{clue.number}.</span>{' '}
-                {clue.text}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="flex gap-4 justify-center">
-        <button
-          onClick={() => setShowHints(!showHints)}
-          className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-lg"
-        >
-          💡 힌트
-        </button>
-
-        <button
-          onClick={handleSubmit}
-          className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg"
-        >
-          ✓ 완료
-        </button>
-      </div>
-
-      {/* Hint Panel */}
-      {showHints && (
-        <div className="mt-4 p-4 bg-blue-100 rounded-lg border-2 border-blue-500">
-          <p className="text-sm text-gray-700">
-            💡 힌트 사용 시 점수에서 -30점씩 감점됩니다.
-          </p>
+        {/* Buttons */}
+        <div className="flex gap-4 justify-center mb-6">
           <button
-            onClick={() => {
-              useHint();
-              setShowHints(false);
-            }}
-            className="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded"
+            onClick={() => setShowHints(!showHints)}
+            className="group relative px-8 py-3 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-white font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border border-yellow-300/30"
           >
-            힌트 사용
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-yellow-200 to-yellow-300 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <div className="relative flex items-center">
+              <span className="text-xl mr-2">💡</span>
+              힌트
+            </div>
+          </button>
+
+          <button
+            onClick={handleSubmit}
+            className="group relative px-8 py-3 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border border-green-400/30"
+          >
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-green-300 to-emerald-400 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <div className="relative flex items-center">
+              <span className="text-xl mr-2">✓</span>
+              완료
+            </div>
           </button>
         </div>
-      )}
+
+        {/* Hint Panel */}
+        {showHints && (
+          <div className="mt-4 p-6 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-xl border-2 border-yellow-400 shadow-lg">
+            <p className="text-sm text-yellow-200 font-semibold mb-3">
+              💡 힌트 사용 시 점수에서 <strong>-30점</strong>씩 감점됩니다.
+            </p>
+            <button
+              onClick={() => {
+                useHint();
+                setShowHints(false);
+              }}
+              className="w-full px-6 py-3 bg-gradient-to-br from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-white font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg"
+            >
+              확인하고 힌트 사용하기
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
