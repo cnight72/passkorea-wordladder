@@ -59,13 +59,13 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-2">
-      {/* Mobile Frame */}
-      <div className="w-full max-w-md bg-black rounded-3xl shadow-2xl overflow-hidden border-8 border-gray-900 relative">
+    <div className="bg-white md:min-h-screen md:bg-black md:flex md:items-center md:justify-center md:p-2">
+      {/* 폰 프레임은 데스크톱 장식이다. 실제 폰에서는 프레임 없이 전체 화면을 쓴다. */}
+      <div className="relative w-full md:max-w-md md:bg-black md:rounded-3xl md:shadow-2xl md:overflow-hidden md:border-8 md:border-gray-900">
         {/* Screen */}
-        <div className="relative bg-white h-[calc(100dvh-2rem)] overflow-y-auto">
-          {/* Status bar with notch */}
-          <div className="sticky top-0 z-50 h-8 bg-black flex items-center justify-center">
+        <div className="relative bg-white h-dvh md:h-[calc(100dvh-2rem)] overflow-y-auto">
+          {/* 가짜 상태바도 데스크톱에서만 (실제 폰에는 진짜 상태바가 있다) */}
+          <div className="hidden md:flex sticky top-0 z-50 h-8 bg-black items-center justify-center">
             <div className="w-24 h-4 bg-gray-800 rounded-full"></div>
           </div>
 
