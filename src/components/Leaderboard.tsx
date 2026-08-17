@@ -3,6 +3,12 @@ import { COUNTRIES } from '../data/countries';
 import type { LeaderboardData } from '../lib/leaderboard';
 import { fetchLeaderboard } from '../lib/leaderboard';
 
+/**
+ * 1일 때 s를 붙이지 않는다. 영어가 모국어가 아닌 사용자에게도 어색함이 드러난다.
+ * country -> countries 처럼 불규칙한 경우는 복수형을 직접 넘긴다.
+ */
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
 interface LeaderboardProps {
   myCountry: string;
   playerName: string;
@@ -58,7 +64,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
           <p className="text-purple-200 text-sm mb-2">리더보드</p>
           <p className="text-purple-100">
             {data
-              ? `${data.totalPlayers} players from ${data.standings.length} countries`
+              ? `${plural(data.totalPlayers, 'player')} from ${plural(data.standings.length, 'country', 'countries')}`
               : 'Global ranking & country battle'}
           </p>
         </div>
@@ -162,7 +168,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                               </p>
                               <p className="text-xs text-gray-500">
                                 {standing
-                                  ? `${standing.players} players · top ${standing.topScore.toLocaleString()}`
+                                  ? `${plural(standing.players, 'player')} · top ${standing.topScore.toLocaleString()}`
                                   : 'Be the first! / 첫 주자가 되세요'}
                               </p>
                             </div>
@@ -217,7 +223,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                   <p className="text-sm text-center text-gray-700 mt-5">
                     {myFlag} {myCountryName} is ranked{' '}
                     <strong className="text-purple-700">#{rankOf(myCountry)}</strong> of{' '}
-                    {data.standings.length}
+                    {plural(data.standings.length, 'country', 'countries')}
                     <span className="block text-xs text-gray-500">
                       참여 중인 {data.standings.length}개국 중 {rankOf(myCountry)}위입니다
                     </span>
