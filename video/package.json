@@ -1,0 +1,25 @@
+{
+  "name": "passkorea-video",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "앱 어휘 데이터로 EPS-TOPIK 쇼츠 mp4를 찍어내는 렌더러. 앱 번들과 분리돼 있다.",
+  "scripts": {
+    "queue": "tsx scripts/build-queue.ts",
+    "render": "node scripts/render.mjs",
+    "studio": "remotion studio src/index.ts"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "tsx": "^4.19.2",
+    "typescript": "~5.9.0"
+  }
+}

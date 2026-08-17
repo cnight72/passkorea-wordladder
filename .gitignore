@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# 쇼츠 렌더 산출물 (mp4·큐·미리보기). used.json 은 이력이라 추적한다.
+video/out
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
