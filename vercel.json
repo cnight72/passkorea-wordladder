@@ -3,12 +3,7 @@
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "react",
-  "env": {
-    "VITE_API_URL": {
-      "default": "http://localhost:5173"
-    }
-  },
+  "framework": "vite",
   "git": {
     "deploymentEnabled": {
       "main": true
