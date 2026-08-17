@@ -26,6 +26,7 @@ const WordChainGame: React.FC<WordChainGameProps> = ({ onGameEnd, onCancel }) =>
   const [wordCount, setWordCount] = useState(0);
   const [gameStatus, setGameStatus] = useState<'playing' | 'gameOver'>('playing');
   const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessageKo, setErrorMessageKo] = useState('');
   const [wordTime, setWordTime] = useState(0);
 
   useEffect(() => {
@@ -44,9 +45,14 @@ const WordChainGame: React.FC<WordChainGameProps> = ({ onGameEnd, onCancel }) =>
     }
   }, [gameStatus]);
 
+  const showError = (en: string, ko: string) => {
+    setErrorMessage(en);
+    setErrorMessageKo(ko);
+  };
+
   const handleSubmitWord = () => {
     if (!nextWordInput.trim()) {
-      setErrorMessage('단어를 입력하세요!');
+      showError('Please enter a word!', '단어를 입력하세요');
       return;
     }
 
@@ -54,17 +60,18 @@ const WordChainGame: React.FC<WordChainGameProps> = ({ onGameEnd, onCancel }) =>
     const wordData = WORD_DATABASE.find(w => w.word === input);
 
     if (!wordData) {
-      setErrorMessage('데이터베이스에 없는 단어입니다.');
+      showError('Word not found in the dictionary.', '사전에 없는 단어입니다');
       return;
     }
 
     if (usedWords.includes(input)) {
-      setErrorMessage('이미 사용한 단어입니다.');
+      showError('This word was already used.', '이미 사용한 단어입니다');
       return;
     }
 
     if (currentWord && currentWord[currentWord.length - 1] !== input[0]) {
-      setErrorMessage(`"${currentWord[currentWord.length - 1]}"로 시작하는 단어를 입력하세요!`);
+      const required = currentWord[currentWord.length - 1];
+      showError(`The word must start with "${required}".`, `"${required}"로 시작하는 단어를 입력하세요`);
       return;
     }
 
@@ -80,7 +87,7 @@ const WordChainGame: React.FC<WordChainGameProps> = ({ onGameEnd, onCancel }) =>
     setTotalScore(totalScore + wordScore);
     setWordCount(wordCount + 1);
     setNextWordInput('');
-    setErrorMessage('');
+    showError('', '');
     setWordTime(0);
   };
 
@@ -90,48 +97,63 @@ const WordChainGame: React.FC<WordChainGameProps> = ({ onGameEnd, onCancel }) =>
 
   if (!currentWord) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <p className="text-xl font-semibold text-gray-700">게임 준비 중...</p>
+      <div className="min-h-full flex items-center justify-center bg-blue-50">
+        <div className="text-center">
+          <p className="text-xl font-semibold text-gray-700">Preparing game...</p>
+          <p className="text-sm text-gray-500">게임 준비 중</p>
+        </div>
       </div>
     );
   }
 
+  const currentWordData = WORD_DATABASE.find(w => w.word === currentWord);
+  const requiredLetter = currentWord[currentWord.length - 1];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">
+    <div className="min-h-full bg-gradient-to-b from-blue-100 to-white">
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
           <div>
-            <p className="text-sm opacity-90">📊 점수</p>
+            <p className="text-xs opacity-90">📊 Score</p>
             <p className="text-2xl font-bold">{totalScore.toLocaleString()}</p>
           </div>
           <div className="text-center">
-            <p className="text-sm opacity-90">단어</p>
-            <p className="text-2xl font-bold">{wordCount}개</p>
+            <p className="text-xs opacity-90">Words</p>
+            <p className="text-2xl font-bold">{wordCount}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm opacity-90">⏱️ 시간</p>
-            <p className="text-2xl font-bold">{wordTime.toFixed(1)}초</p>
+            <p className="text-xs opacity-90">⏱️ Time</p>
+            <p className="text-2xl font-bold">{wordTime.toFixed(1)}s</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         {gameStatus === 'playing' ? (
           <>
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-              <p className="text-center text-sm text-gray-600 mb-4">현재 단어</p>
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 text-center mb-6">
-                <p className="text-5xl font-bold text-blue-600 mb-4">{currentWord}</p>
-                <p className="text-lg text-gray-700">
-                  <strong>다음 단어:</strong> <span className="text-2xl text-blue-600 font-semibold">"{currentWord[currentWord.length - 1]}"</span>로 시작하세요!
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+              <p className="text-center text-sm text-gray-600">Current Word</p>
+              <p className="text-center text-xs text-gray-400 mb-4">현재 단어</p>
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 text-center mb-4">
+                <p className="text-5xl font-bold text-blue-600 mb-2">{currentWord}</p>
+                {currentWordData && (
+                  <p className="text-gray-700 font-semibold mb-4">{currentWordData.english}</p>
+                )}
+                <p className="text-gray-700">
+                  Next word must start with{' '}
+                  <span className="text-2xl text-blue-600 font-bold">&quot;{requiredLetter}&quot;</span>
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  &quot;{requiredLetter}&quot;로 시작하는 단어를 입력하세요
                 </p>
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-              <label className="block text-sm font-bold text-gray-800 mb-3">
-                📝 다음 단어 입력
+              <label className="block text-sm font-bold text-gray-800">
+                📝 Next Word
               </label>
+              <p className="text-xs text-gray-500 mb-3">다음 단어 입력</p>
               <div className="flex gap-2">
                 <input
                   autoFocus
@@ -139,29 +161,31 @@ const WordChainGame: React.FC<WordChainGameProps> = ({ onGameEnd, onCancel }) =>
                   value={nextWordInput}
                   onChange={(e) => {
                     setNextWordInput(e.target.value);
-                    setErrorMessage('');
+                    showError('', '');
                   }}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSubmitWord()}
-                  placeholder="단어 입력..."
-                  className="flex-1 px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-lg"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubmitWord()}
+                  placeholder="Type a word..."
+                  className="flex-1 min-w-0 px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-600 text-lg"
                 />
                 <button
                   onClick={handleSubmitWord}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition"
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-5 rounded-lg transition shrink-0"
                 >
-                  제출 ✓
+                  ✓
                 </button>
               </div>
 
               {errorMessage && (
                 <div className="mt-3 bg-red-100 border-2 border-red-400 text-red-700 px-4 py-2 rounded-lg">
-                  <p className="text-sm"><strong>❌</strong> {errorMessage}</p>
+                  <p className="text-sm font-semibold">❌ {errorMessage}</p>
+                  <p className="text-xs text-red-600">{errorMessageKo}</p>
                 </div>
               )}
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-              <p className="text-sm font-bold text-gray-800 mb-3">📚 사용한 단어 ({usedWords.length})</p>
+              <p className="text-sm font-bold text-gray-800">📚 Used Words ({usedWords.length})</p>
+              <p className="text-xs text-gray-500 mb-3">사용한 단어</p>
               <div className="flex flex-wrap gap-2">
                 {usedWords.map((word, idx) => (
                   <span key={idx} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
@@ -175,25 +199,32 @@ const WordChainGame: React.FC<WordChainGameProps> = ({ onGameEnd, onCancel }) =>
               onClick={() => setGameStatus('gameOver')}
               className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
             >
-              게임 종료
+              END GAME
+              <span className="block text-xs font-normal text-gray-200">게임 종료</span>
             </button>
           </>
         ) : (
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <p className="text-4xl font-bold text-gray-800 mb-4">⏹️ 게임 오버!</p>
+            <p className="text-3xl font-bold text-gray-800 mb-1">⏹️ Game Over!</p>
+            <p className="text-sm text-gray-500 mb-4">게임 종료</p>
             <p className="text-6xl font-bold text-blue-600 mb-2">{totalScore.toLocaleString()}</p>
-            <p className="text-gray-600 mb-8">총 {wordCount}개 단어 성공!</p>
+            <p className="text-gray-600 mb-8">
+              {wordCount} words completed
+              <span className="block text-xs text-gray-400">총 {wordCount}개 단어 성공</span>
+            </p>
             <button
               onClick={handleGameOver}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition text-lg"
             >
-              결과 확인하기 →
+              SEE RESULTS →
+              <span className="block text-xs font-normal text-blue-100">결과 확인하기</span>
             </button>
             <button
               onClick={onCancel}
               className="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition"
             >
-              홈으로
+              HOME
+              <span className="block text-xs font-normal text-gray-500">홈으로</span>
             </button>
           </div>
         )}
