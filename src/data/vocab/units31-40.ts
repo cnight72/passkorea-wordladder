@@ -192,7 +192,6 @@ const entries: VocabEntry[] = [
   { word: '관리하다', english: 'to manage', section: '35-2' },
   { word: '재고를 파악하다', english: 'to check inventory', section: '35-2' },
   { word: '보관하다', english: 'to store', section: '35-2' },
-  { word: '저장하다', english: 'to store away', section: '35-2' },
   { word: '온도를 유지하다', english: 'to maintain the temperature', section: '35-2' },
   { word: '덮개를 덮다', english: 'to cover', section: '35-2' },
   { word: '중요하다', english: 'to be important', section: '35-2' },
@@ -203,7 +202,6 @@ const entries: VocabEntry[] = [
   { word: '적정 온도', english: 'proper temperature', section: '35-2' },
 
   // 36-1 포장 및 적재 작업
-  { word: '싸다', english: 'to package', section: '36-1' },
   { word: '포장하다', english: 'to wrap up', section: '36-1' },
   { word: '넣다', english: 'to put in', section: '36-1' },
   { word: '분류하다', english: 'to sort', section: '36-1' },

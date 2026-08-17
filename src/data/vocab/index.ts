@@ -7,6 +7,9 @@ export { THEMES, unitOf, SECTIONS, TOTAL_WORDS };
 
 /** 어휘 본문은 용량이 커서 퀴즈를 시작할 때 내려받는다. */
 const loaders = [
+  () => import('./units01-10'),
+  () => import('./units11-20'),
+  () => import('./units21-30'),
   () => import('./units31-40'),
   () => import('./units41-50'),
   () => import('./units51-60'),
