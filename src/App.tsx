@@ -24,12 +24,23 @@ function App() {
   }, [gameStatus, startTime, setElapsedTime]);
 
   return (
-    <div className="app">
-      {gameStatus === 'idle' && <Home />}
-      {gameStatus === 'playing' && currentCrossword && (
-        <CrosswordGrid crossword={currentCrossword} />
-      )}
-      {gameStatus === 'completed' && <ResultScreen />}
+    <div className="min-h-screen bg-black flex items-center justify-center p-2">
+      {/* Mobile Frame */}
+      <div className="w-full max-w-md bg-black rounded-3xl shadow-2xl overflow-hidden border-8 border-gray-900 relative">
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-8 bg-black rounded-b-3xl z-50"></div>
+        
+        {/* Screen */}
+        <div className="relative bg-white min-h-screen">
+          <div className="app">
+            {gameStatus === 'idle' && <Home />}
+            {gameStatus === 'playing' && currentCrossword && (
+              <CrosswordGrid crossword={currentCrossword} />
+            )}
+            {gameStatus === 'completed' && <ResultScreen />}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
