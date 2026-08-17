@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import CountrySelector from './CountrySelector';
 import logo from '../assets/logo.png';
-import type { CategoryId } from '../data/words';
-import { CATEGORIES, getWordsByCategory, WORDS } from '../data/words';
+import type { ThemeId } from '../data/vocab';
+import { AVAILABLE_THEMES, TOTAL_WORDS } from '../data/vocab';
 import type { IndustryId } from '../data/exams';
 import { INDUSTRIES, TOTAL_QUESTIONS } from '../data/exams';
 
 export type GameMode =
-  | { kind: 'vocab'; category: CategoryId | 'all' }
+  | { kind: 'vocab'; theme: ThemeId | 'all' }
   | { kind: 'exam'; industry: IndustryId };
 
 interface WordChainHomeProps {
@@ -30,14 +30,14 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
   const [playerName, setPlayerName] = useState(initialName);
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
   const [mode, setMode] = useState<'vocab' | 'exam'>('vocab');
-  const [category, setCategory] = useState<CategoryId | 'all'>('all');
+  const [theme, setTheme] = useState<ThemeId | 'all'>('all');
   const [industry, setIndustry] = useState<IndustryId>('machinery');
 
   const handleStart = () =>
     onStartGame(
       playerName,
       selectedCountry,
-      mode === 'vocab' ? { kind: 'vocab', category } : { kind: 'exam', industry }
+      mode === 'vocab' ? { kind: 'vocab', theme } : { kind: 'exam', industry }
     );
 
   return (
@@ -130,7 +130,7 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
             >
               📖 Vocabulary
               <span className="block text-xs opacity-75">어휘</span>
-              <span className="block text-xs opacity-60 mt-1">{WORDS.length} words</span>
+              <span className="block text-xs opacity-60 mt-1">{TOTAL_WORDS} words</span>
             </button>
             <button
               onClick={() => setMode('exam')}
@@ -190,9 +190,9 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
 
           <div className="space-y-2">
             <button
-              onClick={() => setCategory('all')}
+              onClick={() => setTheme('all')}
               className={`w-full text-left px-4 py-3 rounded-lg border-2 transition flex items-center justify-between ${
-                category === 'all'
+                theme === 'all'
                   ? 'bg-blue-500 border-blue-500 text-white font-semibold'
                   : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-800'
               }`}
@@ -201,15 +201,15 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
                 🌐 All Topics
                 <span className="block text-xs opacity-75">전체 영역</span>
               </span>
-              <span className="text-xs opacity-75">{WORDS.length}</span>
+              <span className="text-xs opacity-75">{TOTAL_WORDS}</span>
             </button>
 
-            {CATEGORIES.map((item) => (
+            {AVAILABLE_THEMES.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setCategory(item.id)}
+                onClick={() => setTheme(item.id)}
                 className={`w-full text-left px-4 py-3 rounded-lg border-2 transition flex items-center justify-between ${
-                  category === item.id
+                  theme === item.id
                     ? 'bg-blue-500 border-blue-500 text-white font-semibold'
                     : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-800'
                 }`}
@@ -218,10 +218,15 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
                   {item.emoji} {item.english}
                   <span className="block text-xs opacity-75">{item.korean}</span>
                 </span>
-                <span className="text-xs opacity-75">{getWordsByCategory(item.id).length}</span>
+                <span className="text-xs opacity-75">{item.count}</span>
               </button>
             ))}
           </div>
+
+          <p className="text-xs text-gray-500 text-center mt-3">
+            From the official EPS-TOPIK Standard Korean Textbook.
+            <span className="block text-gray-400">EPS-TOPIK 한국어 표준교재 수록 어휘입니다.</span>
+          </p>
         </div>
         )}
 

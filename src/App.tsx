@@ -16,7 +16,7 @@ function App() {
   const [gameResult, setGameResult] = useState<{ score: number; words: string[] } | null>(null);
   const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [isNewBest, setIsNewBest] = useState(false);
-  const [mode, setMode] = useState<GameMode>({ kind: 'vocab', category: 'all' });
+  const [mode, setMode] = useState<GameMode>({ kind: 'vocab', theme: 'all' });
 
   const persist = (next: Profile) => {
     setProfile(next);
@@ -82,7 +82,7 @@ function App() {
 
           {currentScreen === 'game' && mode.kind === 'vocab' && (
             <VocabQuiz
-              category={mode.category}
+              theme={mode.theme}
               onGameEnd={handleGameEnd}
               onCancel={handleHome}
             />

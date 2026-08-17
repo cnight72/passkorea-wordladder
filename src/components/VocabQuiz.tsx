@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import type { CategoryId, QuizQuestion } from '../data/words';
-import { buildQuiz, getCategory } from '../data/words';
+import React, { useState, useEffect } from 'react';
+import type { ThemeId, VocabQuestion } from '../data/vocab';
+import { buildVocabQuiz, getSection, themeOfSection } from '../data/vocab';
 
 const QUESTION_COUNT = 20;
-/** 문제당 제한시간(초) */
+/** 문항당 제한시간(초) */
 const TIME_LIMIT = 15;
 
 interface VocabQuizProps {
-  category: CategoryId | 'all';
+  theme: ThemeId | 'all';
   onGameEnd: (score: number, correctWords: string[]) => void;
   onCancel: () => void;
 }
 
-const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) => {
-  const questions = useMemo(() => buildQuiz(QUESTION_COUNT, category), [category]);
+const VocabQuiz: React.FC<VocabQuizProps> = ({ theme, onGameEnd, onCancel }) => {
+  const [questions, setQuestions] = useState<VocabQuestion[] | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -22,17 +23,33 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
   const [finished, setFinished] = useState(false);
 
-  const question: QuizQuestion | undefined = questions[index];
+  const question: VocabQuestion | undefined = questions?.[index];
   const answered = selected !== null;
 
-  // 문제당 카운트다운. 답을 고르면 멈춘다.
+  // 어휘 본문은 별도 번들이라 비동기로 받아온다
+  useEffect(() => {
+    let cancelled = false;
+
+    buildVocabQuiz(QUESTION_COUNT, theme)
+      .then((built) => {
+        if (!cancelled) setQuestions(built);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadFailed(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [theme]);
+
   useEffect(() => {
     if (answered || finished || !question) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0.1) {
-          setSelected(-1); // 시간 초과 = 오답 처리
+          setSelected(-1); // 시간 초과 = 오답
           return 0;
         }
         return Math.round((prev - 0.1) * 10) / 10;
@@ -44,11 +61,9 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
 
   const handleAnswer = (choiceIndex: number) => {
     if (answered || !question) return;
-
     setSelected(choiceIndex);
 
     if (choiceIndex === question.answerIndex) {
-      // 정답 50점 + 빠를수록 최대 30점
       const timeBonus = timeLeft >= 12 ? 30 : timeLeft >= 8 ? 20 : timeLeft >= 4 ? 10 : 0;
       setScore((prev) => prev + 50 + timeBonus);
       setCorrectWords((prev) => [...prev, question.entry.word]);
@@ -56,7 +71,7 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
   };
 
   const handleNext = () => {
-    if (index + 1 >= questions.length) {
+    if (!questions || index + 1 >= questions.length) {
       setFinished(true);
       return;
     }
@@ -65,7 +80,7 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
     setTimeLeft(TIME_LIMIT);
   };
 
-  if (!question) {
+  if (loadFailed || (questions && questions.length === 0)) {
     return (
       <div className="min-h-full flex items-center justify-center bg-blue-50">
         <div className="text-center px-6">
@@ -77,6 +92,17 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
           >
             HOME / 홈으로
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!questions || !question) {
+    return (
+      <div className="min-h-full flex items-center justify-center bg-blue-50">
+        <div className="text-center">
+          <p className="text-xl font-semibold text-gray-700">Loading words...</p>
+          <p className="text-sm text-gray-500">단어를 불러오는 중</p>
         </div>
       </div>
     );
@@ -118,7 +144,8 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
     );
   }
 
-  const categoryInfo = getCategory(question.entry.category);
+  const section = getSection(question.entry.section);
+  const themeInfo = themeOfSection(question.entry.section);
   const isCorrect = selected === question.answerIndex;
   const progress = ((index + (answered ? 1 : 0)) / questions.length) * 100;
 
@@ -163,19 +190,21 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow-lg p-6 mb-5 text-center">
-          {categoryInfo && (
+          {themeInfo && (
             <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-4">
-              {categoryInfo.emoji} {categoryInfo.english}
+              {themeInfo.emoji} {section?.english ?? themeInfo.english}
             </span>
           )}
 
           <p className="text-sm text-gray-600">What does this word mean?</p>
           <p className="text-xs text-gray-400 mb-4">이 단어의 뜻은 무엇입니까?</p>
 
-          <p className="text-5xl font-bold text-blue-600">{question.entry.word}</p>
+          <p className="text-4xl font-bold text-blue-600">{question.entry.word}</p>
 
-          {answered && (
-            <p className="text-sm text-gray-500 mt-4">{question.entry.meaning}</p>
+          {answered && section && (
+            <p className="text-xs text-gray-500 mt-4">
+              {question.entry.section} {section.korean}
+            </p>
           )}
         </div>
 
@@ -211,8 +240,7 @@ const VocabQuiz: React.FC<VocabQuizProps> = ({ category, onGameEnd, onCancel }) 
                     {selected === -1 ? "⏰ Time's up!" : '❌ Incorrect'}
                   </p>
                   <p className="text-xs text-red-700">
-                    {selected === -1 ? '시간이 초과되었습니다' : '틀렸습니다'} — 정답:{' '}
-                    {question.entry.english}
+                    {question.entry.word} — {question.entry.english}
                   </p>
                 </>
               )}
