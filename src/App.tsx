@@ -1,12 +1,13 @@
 import './App.css';
 import { useState } from 'react';
 import WordChainHome from './components/WordChainHome';
+import type { GameMode } from './components/WordChainHome';
 import VocabQuiz from './components/VocabQuiz';
+import ExamQuiz from './components/ExamQuiz';
 import ResultScreen from './components/ResultScreen';
 import Leaderboard from './components/Leaderboard';
 import type { Profile } from './lib/storage';
 import { loadProfile, saveProfile } from './lib/storage';
-import type { CategoryId } from './data/words';
 
 type GameScreen = 'home' | 'game' | 'result' | 'leaderboard';
 
@@ -15,16 +16,16 @@ function App() {
   const [gameResult, setGameResult] = useState<{ score: number; words: string[] } | null>(null);
   const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [isNewBest, setIsNewBest] = useState(false);
-  const [category, setCategory] = useState<CategoryId | 'all'>('all');
+  const [mode, setMode] = useState<GameMode>({ kind: 'vocab', category: 'all' });
 
   const persist = (next: Profile) => {
     setProfile(next);
     saveProfile(next);
   };
 
-  const handleStartGame = (name: string, country: string, topic: CategoryId | 'all') => {
+  const handleStartGame = (name: string, country: string, selectedMode: GameMode) => {
     persist({ ...profile, playerName: name.trim() || 'Player', countryCode: country });
-    setCategory(topic);
+    setMode(selectedMode);
     setCurrentScreen('game');
   };
 
@@ -79,9 +80,17 @@ function App() {
             />
           )}
 
-          {currentScreen === 'game' && (
+          {currentScreen === 'game' && mode.kind === 'vocab' && (
             <VocabQuiz
-              category={category}
+              category={mode.category}
+              onGameEnd={handleGameEnd}
+              onCancel={handleHome}
+            />
+          )}
+
+          {currentScreen === 'game' && mode.kind === 'exam' && (
+            <ExamQuiz
+              industry={mode.industry}
               onGameEnd={handleGameEnd}
               onCancel={handleHome}
             />

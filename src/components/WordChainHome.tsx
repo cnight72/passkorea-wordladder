@@ -3,13 +3,19 @@ import CountrySelector from './CountrySelector';
 import logo from '../assets/logo.png';
 import type { CategoryId } from '../data/words';
 import { CATEGORIES, getWordsByCategory, WORDS } from '../data/words';
+import type { IndustryId } from '../data/exams';
+import { INDUSTRIES, TOTAL_QUESTIONS } from '../data/exams';
+
+export type GameMode =
+  | { kind: 'vocab'; category: CategoryId | 'all' }
+  | { kind: 'exam'; industry: IndustryId };
 
 interface WordChainHomeProps {
   initialName: string;
   initialCountry: string;
   bestScore: number;
   gamesPlayed: number;
-  onStartGame: (playerName: string, countryCode: string, category: CategoryId | 'all') => void;
+  onStartGame: (playerName: string, countryCode: string, mode: GameMode) => void;
   onViewLeaderboard: () => void;
 }
 
@@ -23,7 +29,16 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
 }) => {
   const [playerName, setPlayerName] = useState(initialName);
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
+  const [mode, setMode] = useState<'vocab' | 'exam'>('vocab');
   const [category, setCategory] = useState<CategoryId | 'all'>('all');
+  const [industry, setIndustry] = useState<IndustryId>('machinery');
+
+  const handleStart = () =>
+    onStartGame(
+      playerName,
+      selectedCountry,
+      mode === 'vocab' ? { kind: 'vocab', category } : { kind: 'exam', industry }
+    );
 
   return (
     <div className="min-h-full bg-gradient-to-b from-blue-50 to-white">
@@ -100,6 +115,75 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <label className="block text-sm font-bold text-gray-800">
+            🎓 Test Type
+          </label>
+          <p className="text-xs text-gray-500 mb-3">시험 종류</p>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setMode('vocab')}
+              className={`px-3 py-3 rounded-lg border-2 transition text-center ${
+                mode === 'vocab'
+                  ? 'bg-blue-500 border-blue-500 text-white font-semibold'
+                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-800'
+              }`}
+            >
+              📖 Vocabulary
+              <span className="block text-xs opacity-75">어휘</span>
+              <span className="block text-xs opacity-60 mt-1">{WORDS.length} words</span>
+            </button>
+            <button
+              onClick={() => setMode('exam')}
+              className={`px-3 py-3 rounded-lg border-2 transition text-center ${
+                mode === 'exam'
+                  ? 'bg-indigo-600 border-indigo-600 text-white font-semibold'
+                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-800'
+              }`}
+            >
+              🏭 Job Skills
+              <span className="block text-xs opacity-75">직무</span>
+              <span className="block text-xs opacity-60 mt-1">{TOTAL_QUESTIONS} questions</span>
+            </button>
+          </div>
+
+          {mode === 'exam' && (
+            <p className="text-xs text-gray-500 text-center mt-3">
+              Official questions from the Special EPS-TOPIK job test.
+              <span className="block text-gray-400">
+                특별 EPS-TOPIK 직무문항 공개문제(2025)입니다.
+              </span>
+            </p>
+          )}
+        </div>
+
+        {mode === 'exam' ? (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <label className="block text-sm font-bold text-gray-800">🏭 Industry</label>
+            <p className="text-xs text-gray-500 mb-3">업종</p>
+
+            <div className="space-y-2">
+              {INDUSTRIES.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setIndustry(item.id)}
+                  className={`w-full text-left px-4 py-3 rounded-lg border-2 transition flex items-center justify-between ${
+                    industry === item.id
+                      ? 'bg-indigo-600 border-indigo-600 text-white font-semibold'
+                      : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  <span>
+                    {item.emoji} {item.english}
+                    <span className="block text-xs opacity-75">{item.korean}</span>
+                  </span>
+                  <span className="text-xs opacity-75">{item.count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <label className="block text-sm font-bold text-gray-800">
             📚 Exam Topic
           </label>
           <p className="text-xs text-gray-500 mb-3">시험 영역</p>
@@ -139,10 +223,11 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
             ))}
           </div>
         </div>
+        )}
 
         <div className="space-y-3">
           <button
-            onClick={() => onStartGame(playerName, selectedCountry, category)}
+            onClick={handleStart}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition"
           >
             🚀 START GAME
