@@ -1,30 +1,13 @@
 import React, { useState } from 'react';
 
+import { COUNTRIES } from '../data/countries';
+
 interface LeaderboardProps {
+  myCountry: string;
   onBack: () => void;
 }
 
-const COUNTRIES = [
-  { code: 'NP', name: 'Nepal', flag: '🇳🇵' },
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩' },
-  { code: 'PH', name: 'Philippines', flag: '🇵🇭' },
-  { code: 'VN', name: 'Vietnam', flag: '🇻🇳' },
-  { code: 'MM', name: 'Myanmar', flag: '🇲🇲' },
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭' },
-  { code: 'LA', name: 'Laos', flag: '🇱🇦' },
-  { code: 'KH', name: 'Cambodia', flag: '🇰🇭' },
-  { code: 'BD', name: 'Bangladesh', flag: '🇧🇩' },
-  { code: 'PK', name: 'Pakistan', flag: '🇵🇰' },
-  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰' },
-  { code: 'CN', name: 'China', flag: '🇨🇳' },
-  { code: 'IN', name: 'India', flag: '🇮🇳' },
-  { code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿' },
-  { code: 'KG', name: 'Kyrgyzstan', flag: '🇰🇬' },
-  { code: 'TJ', name: 'Tajikistan', flag: '🇹🇯' },
-  { code: 'TM', name: 'Turkmenistan', flag: '🇹🇲' },
-];
-
-const Leaderboard: React.FC<LeaderboardProps> = ({ onBack }) => {
+const Leaderboard: React.FC<LeaderboardProps> = ({ myCountry, onBack }) => {
   const [activeTab, setActiveTab] = useState<'country' | 'player'>('country');
 
   return (
@@ -68,7 +51,11 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onBack }) => {
                   <div
                     key={country.code}
                     className={`p-4 flex items-center justify-between ${
-                      idx < 3 ? 'bg-gradient-to-r from-yellow-50 to-yellow-100' : ''
+                      country.code === myCountry
+                        ? 'bg-purple-50 ring-2 ring-inset ring-purple-400'
+                        : idx < 3
+                          ? 'bg-gradient-to-r from-yellow-50 to-yellow-100'
+                          : ''
                     }`}
                   >
                     <div className="flex items-center gap-4 flex-1">
@@ -78,6 +65,11 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onBack }) => {
                       <div className="flex-1">
                         <p className="font-semibold text-gray-800">
                           {country.flag} {country.name}
+                          {country.code === myCountry && (
+                            <span className="ml-2 text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full align-middle">
+                              나의 국가
+                            </span>
+                          )}
                         </p>
                         <p className="text-sm text-gray-600">참여 중</p>
                       </div>

@@ -1,46 +1,74 @@
 import './App.css';
-import { useEffect } from 'react';
-import { useCrosswordStore } from './store/crosswordStore';
-import Home from './components/Home';
-import CrosswordGrid from './components/CrosswordGrid';
+import { useState } from 'react';
+import WordChainHome from './components/WordChainHome';
+import WordChainGame from './components/WordChainGame';
 import ResultScreen from './components/ResultScreen';
+import Leaderboard from './components/Leaderboard';
+
+type GameScreen = 'home' | 'game' | 'result' | 'leaderboard';
 
 function App() {
-  const gameStatus = useCrosswordStore((state) => state.gameStatus);
-  const currentCrossword = useCrosswordStore((state) => state.currentCrossword);
-  const setElapsedTime = useCrosswordStore((state) => state.setElapsedTime);
-  const startTime = useCrosswordStore((state) => state.startTime);
+  const [currentScreen, setCurrentScreen] = useState<GameScreen>('home');
+  const [gameResult, setGameResult] = useState<{ score: number; words: string[] } | null>(null);
+  const [playerName, setPlayerName] = useState('');
+  const [countryCode, setCountryCode] = useState('NP');
 
-  // 타이머: 게임 진행 중 시간 업데이트
-  useEffect(() => {
-    if (gameStatus !== 'playing' || !startTime) return;
+  const handleStartGame = (name: string, country: string) => {
+    setPlayerName(name.trim() || '익명');
+    setCountryCode(country);
+    setCurrentScreen('game');
+  };
 
-    const interval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      setElapsedTime(elapsed);
-    }, 1000);
+  const handleGameEnd = (score: number, words: string[]) => {
+    setGameResult({ score, words });
+    setCurrentScreen('result');
+  };
 
-    return () => clearInterval(interval);
-  }, [gameStatus, startTime, setElapsedTime]);
+  const handlePlayAgain = () => {
+    setGameResult(null);
+    setCurrentScreen('game');
+  };
+
+  const handleViewLeaderboard = () => {
+    setCurrentScreen('leaderboard');
+  };
+
+  const handleHome = () => {
+    setCurrentScreen('home');
+    setGameResult(null);
+  };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-2">
-      {/* Mobile Frame */}
-      <div className="w-full max-w-md bg-black rounded-3xl shadow-2xl overflow-hidden border-8 border-gray-900 relative">
-        {/* Notch */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-8 bg-black rounded-b-3xl z-50"></div>
-        
-        {/* Screen */}
-        <div className="relative bg-white min-h-screen">
-          <div className="app">
-            {gameStatus === 'idle' && <Home />}
-            {gameStatus === 'playing' && currentCrossword && (
-              <CrosswordGrid crossword={currentCrossword} />
-            )}
-            {gameStatus === 'completed' && <ResultScreen />}
-          </div>
-        </div>
-      </div>
+    <div className="bg-white min-h-screen">
+      {currentScreen === 'home' && (
+        <WordChainHome
+          onStartGame={handleStartGame}
+          onViewLeaderboard={handleViewLeaderboard}
+        />
+      )}
+
+      {currentScreen === 'game' && (
+        <WordChainGame
+          onGameEnd={handleGameEnd}
+          onCancel={handleHome}
+        />
+      )}
+
+      {currentScreen === 'result' && gameResult && (
+        <ResultScreen
+          score={gameResult.score}
+          words={gameResult.words}
+          playerName={playerName}
+          countryCode={countryCode}
+          onPlayAgain={handlePlayAgain}
+          onViewLeaderboard={handleViewLeaderboard}
+          onHome={handleHome}
+        />
+      )}
+
+      {currentScreen === 'leaderboard' && (
+        <Leaderboard myCountry={countryCode} onBack={handleHome} />
+      )}
     </div>
   );
 }
