@@ -60,6 +60,18 @@ export function getIndustry(id: IndustryId): Industry | undefined {
 
 export const TOTAL_QUESTIONS = INDUSTRIES.reduce((sum, i) => sum + i.count, 0);
 
+/** 'machinery-12' 형태의 딥링크 식별자로 문항 하나를 찾는다. */
+export async function loadQuestionById(id: string): Promise<ExamQuestion | null> {
+  const dash = id.lastIndexOf('-');
+  if (dash < 0) return null;
+
+  const industry = id.slice(0, dash) as IndustryId;
+  if (!(industry in loaders)) return null;
+
+  const questions = await loadQuestions(industry);
+  return questions.find((q) => q.id === id) ?? null;
+}
+
 export async function loadQuestions(industry: IndustryId): Promise<ExamQuestion[]> {
   const mod = await loaders[industry]();
   return mod.default.map((raw) => ({

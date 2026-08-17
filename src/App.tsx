@@ -8,19 +8,42 @@ import ReviewQuiz from './components/ReviewQuiz';
 import ResultScreen from './components/ResultScreen';
 import Leaderboard from './components/Leaderboard';
 import AboutScreen from './components/AboutScreen';
+import SharedQuestion from './components/SharedQuestion';
+import type { DeepLink } from './lib/deeplink';
+import { clearDeepLink, parseDeepLink } from './lib/deeplink';
+import type { IndustryId } from './data/exams';
 import type { Profile } from './lib/storage';
 import { loadProfile, saveProfile } from './lib/storage';
 import { reviewCount } from './lib/review';
 import { submitScore } from './lib/leaderboard';
 
-type GameScreen = 'home' | 'game' | 'review' | 'result' | 'leaderboard' | 'about';
+type GameScreen = 'home' | 'game' | 'review' | 'result' | 'leaderboard' | 'about' | 'shared';
+
+/** 쇼츠 링크로 들어왔는지 최초 1회만 판별한다 */
+const initialLink: DeepLink | null = parseDeepLink(window.location.search);
+
+/** 단일 문항 링크는 그 문항부터, 주제·업종 링크는 곧바로 퀴즈로 보낸다 */
+const initialScreen: GameScreen =
+  initialLink?.kind === 'vocabWord' || initialLink?.kind === 'examQuestion'
+    ? 'shared'
+    : initialLink
+      ? 'game'
+      : 'home';
+
+const initialMode: GameMode =
+  initialLink?.kind === 'vocabTheme'
+    ? { kind: 'vocab', theme: initialLink.theme }
+    : initialLink?.kind === 'examIndustry'
+      ? { kind: 'exam', industry: initialLink.industry as IndustryId }
+      : { kind: 'vocab', theme: 'all' };
 
 function App() {
-  const [currentScreen, setCurrentScreen] = useState<GameScreen>('home');
+  const [deepLink] = useState<DeepLink | null>(initialLink);
+  const [currentScreen, setCurrentScreen] = useState<GameScreen>(initialScreen);
   const [gameResult, setGameResult] = useState<{ score: number; words: string[] } | null>(null);
   const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [isNewBest, setIsNewBest] = useState(false);
-  const [mode, setMode] = useState<GameMode>({ kind: 'vocab', theme: 'all' });
+  const [mode, setMode] = useState<GameMode>(initialMode);
   // 홈으로 돌아올 때마다 다시 세도록 화면 전환을 의존성으로 삼는다
   const pendingReviews = currentScreen === 'home' ? reviewCount() : 0;
 
@@ -65,7 +88,19 @@ function App() {
   const handleHome = () => {
     setGameResult(null);
     setIsNewBest(false);
+    // 새로고침했을 때 링크로 들어온 문항이 다시 뜨지 않도록 주소창을 정리한다
+    clearDeepLink();
     setCurrentScreen('home');
+  };
+
+  /** 쇼츠에서 본 문항을 푼 뒤 이어서 전체 퀴즈로 */
+  const handleContinueFromShared = () => {
+    clearDeepLink();
+    if (deepLink?.kind === 'examQuestion') {
+      const dash = deepLink.id.lastIndexOf('-');
+      if (dash > 0) setMode({ kind: 'exam', industry: deepLink.id.slice(0, dash) as IndustryId });
+    }
+    setCurrentScreen('game');
   };
 
   return (
@@ -106,6 +141,14 @@ function App() {
               industry={mode.industry}
               onGameEnd={handleGameEnd}
               onCancel={handleHome}
+            />
+          )}
+
+          {currentScreen === 'shared' && deepLink && (
+            <SharedQuestion
+              link={deepLink}
+              onContinue={handleContinueFromShared}
+              onHome={handleHome}
             />
           )}
 

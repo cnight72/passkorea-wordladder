@@ -75,6 +75,37 @@ function shuffle<T>(items: T[]): T[] {
  * 오답은 같은 소단원 → 같은 주제 → 전체 순으로 골라 변별력을 유지한다.
  * 표제어는 전 범위에서 유일하므로 한 단어에 정답이 둘일 일은 없다.
  */
+/** 딥링크로 지목된 단어 한 개를 문제로 만든다. 없으면 null. */
+export async function buildQuestionForWord(word: string): Promise<VocabQuestion | null> {
+  const all = await loadVocab();
+  const entry = all.find((e) => e.word === word);
+  if (!entry) return null;
+
+  const distractors = pickDistractors(all, entry);
+  const choices = shuffle([entry.english, ...distractors]);
+  return { entry, choices, answerIndex: choices.indexOf(entry.english) };
+}
+
+/** 오답은 같은 소단원 → 같은 주제 → 전체 순으로 골라 변별력을 유지한다. */
+function pickDistractors(all: VocabEntry[], entry: VocabEntry): string[] {
+  const themeOf = themeOfSection(entry.section)?.id;
+  const sameSection = all.filter((e) => e.section === entry.section && e.english !== entry.english);
+  const sameTheme = all.filter(
+    (e) => themeOfSection(e.section)?.id === themeOf && e.section !== entry.section
+  );
+  const others = all.filter((e) => themeOfSection(e.section)?.id !== themeOf);
+
+  return [...shuffle(sameSection), ...shuffle(sameTheme), ...shuffle(others)].reduce<string[]>(
+    (acc, e) => {
+      if (acc.length < 3 && e.english !== entry.english && !acc.includes(e.english)) {
+        acc.push(e.english);
+      }
+      return acc;
+    },
+    []
+  );
+}
+
 export async function buildVocabQuiz(
   count: number,
   themeId: ThemeId | 'all'
@@ -84,22 +115,7 @@ export async function buildVocabQuiz(
   const selected = shuffle(pool).slice(0, Math.min(count, pool.length));
 
   return selected.map((entry) => {
-    const sameSection = all.filter((e) => e.section === entry.section && e.english !== entry.english);
-    const themeOf = themeOfSection(entry.section)?.id;
-    const sameTheme = all.filter(
-      (e) => themeOfSection(e.section)?.id === themeOf && e.section !== entry.section
-    );
-    const others = all.filter((e) => themeOfSection(e.section)?.id !== themeOf);
-
-    const distractors = [...shuffle(sameSection), ...shuffle(sameTheme), ...shuffle(others)].reduce<string[]>(
-      (acc, e) => {
-        if (acc.length < 3 && e.english !== entry.english && !acc.includes(e.english)) acc.push(e.english);
-        return acc;
-      },
-      []
-    );
-
-    const choices = shuffle([entry.english, ...distractors]);
+    const choices = shuffle([entry.english, ...pickDistractors(all, entry)]);
     return { entry, choices, answerIndex: choices.indexOf(entry.english) };
   });
 }
