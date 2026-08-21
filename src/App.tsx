@@ -30,12 +30,17 @@ const initialLink: DeepLink | null = parseDeepLink(window.location.search);
 const initialScreen: GameScreen =
   initialLink?.kind === 'vocabWord' || initialLink?.kind === 'examQuestion' ? 'shared' : 'game';
 
+/**
+ * 주제를 지정하지 않고 들어오면 기초 생활(1~10과)부터 낸다.
+ * 'all'로 두면 2,101단어에서 고르게 뽑혀 첫 문제가 '법률 교육' 같은 것이 나온다.
+ * 쇼츠·채널 링크로 오는 사람은 대부분 초급자다. 전체를 풀려면 홈에서 주제를 바꾸면 된다.
+ */
 const initialMode: GameMode =
   initialLink?.kind === 'vocabTheme'
     ? { kind: 'vocab', theme: initialLink.theme }
     : initialLink?.kind === 'examIndustry'
       ? { kind: 'exam', industry: initialLink.industry as IndustryId }
-      : { kind: 'vocab', theme: 'all' };
+      : { kind: 'vocab', theme: 'basic' };
 
 function App() {
   const [deepLink] = useState<DeepLink | null>(initialLink);
