@@ -24,14 +24,23 @@ if (!existsSync(QUEUE_PATH)) {
 
 const TTS_DIR = join(VIDEO_DIR, 'public', 'tts');
 
-/** make-tts.ps1 이 만들어 둔 발음 파일이 있으면 붙인다. 없으면 소리 없이 렌더된다. */
+/**
+ * 발음 파일이 있으면 붙인다. 없으면 소리 없이 렌더된다.
+ *
+ * mp3 는 make-tts.mjs(Edge 신경망 음성), wav 는 make-tts.ps1(Windows Heami)이 만든다.
+ * mp3 를 먼저 찾으므로 새 엔진으로 다시 만들면 자동으로 그쪽이 쓰인다.
+ */
+function findAudio(base) {
+  return ['mp3', 'wav'].map((ext) => `${base}.${ext}`).find((f) => existsSync(join(TTS_DIR, f)));
+}
+
 function withVoice(q) {
-  const word = `${q.id}.wav`;
-  const question = `${q.id}-q.wav`;
+  const word = findAudio(q.id);
+  const question = findAudio(`${q.id}-q`);
   return {
     ...q,
-    ...(existsSync(join(TTS_DIR, word)) ? { voice: word } : {}),
-    ...(existsSync(join(TTS_DIR, question)) ? { voiceQuestion: question } : {}),
+    ...(word ? { voice: word } : {}),
+    ...(question ? { voiceQuestion: question } : {}),
   };
 }
 

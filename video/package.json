@@ -6,6 +6,7 @@
   "description": "앱 어휘 데이터로 EPS-TOPIK 쇼츠 mp4를 찍어내는 렌더러. 앱 번들과 분리돼 있다.",
   "scripts": {
     "queue": "tsx scripts/build-queue.ts",
+    "tts": "node scripts/make-tts.mjs",
     "render": "node scripts/render.mjs",
     "studio": "remotion studio src/index.ts"
   },
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
+    "msedge-tts": "^2.0.7",
     "tsx": "^4.19.2",
     "typescript": "~5.9.0"
   }
