@@ -35,7 +35,17 @@ export const Background: React.FC<{ background?: string }> = ({ background }) =>
         src={staticFile(`backgrounds/${background}`)}
         style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${scale})` }}
       />
-      <AbsoluteFill style={{ background: 'rgba(15,23,42,0.55)' }} />
+      {/*
+        0.55 로는 밝은 사진(흰 커튼·베이지 벽)에서 화면이 회색으로 뜨고 흰 보기 카드가
+        배경과 붙는다. 배경 사진을 아무거나 넣어도 견디도록 막을 두껍게 잡는다.
+        위쪽을 더 어둡게 해 질문 글씨의 대비를 따로 확보한다.
+      */}
+      <AbsoluteFill
+        style={{
+          background:
+            'linear-gradient(to bottom, rgba(10,18,35,0.82), rgba(10,18,35,0.72) 45%, rgba(10,18,35,0.82))',
+        }}
+      />
     </AbsoluteFill>
   );
 };
@@ -58,8 +68,10 @@ export const ChoiceRow: React.FC<{
     config: { damping: 200 },
   });
 
-  // 공개 후 오답은 흐려지고 정답만 남는다
-  const dim = revealed && !isAnswer ? 0.28 : 1;
+  // 공개 후 오답은 흐려지고 정답만 남는다.
+  // 0.28 은 그라데이션 배경 기준이었다. 사진 위에서는 오답이 아예 안 읽혀서
+  // 흐린 게 아니라 깨진 것처럼 보인다. 읽히되 물러나는 정도로 올린다.
+  const dim = revealed && !isAnswer ? 0.45 : 1;
   const pop =
     revealed && isAnswer ? spring({ frame: frame - SCENE.reveal, fps, config: { damping: 12 } }) : 0;
   const won = revealed && isAnswer;
@@ -235,6 +247,43 @@ export const Header: React.FC<{ topic: string; showCountdown: boolean }> = ({
   </div>
 );
 
+/**
+ * 카운트다운 동안만 뜨는 댓글 유도. 정답이 공개되면 사라진다.
+ * GPT 로 만들던 영상에 있던 장치인데 자동판에 빠져 있었다. 이 채널은 편당 댓글이
+ * 1~2 개뿐이라 한 줄이라도 있는 편이 낫다.
+ */
+export const CommentPrompt: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  if (frame < SCENE.countdown || frame >= SCENE.reveal) return null;
+
+  const enter = spring({ frame: frame - SCENE.countdown, fps, config: { damping: 200 } });
+  // 정답 공개 직전에 미리 걷어내야 공개 화면과 겹치지 않는다
+  const fade = interpolate(frame, [SCENE.reveal - 15, SCENE.reveal], [1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  return (
+    <div style={{ textAlign: 'center', marginTop: 10, opacity: enter * fade }}>
+      <div
+        style={{
+          display: 'inline-block',
+          padding: '16px 38px',
+          borderRadius: 999,
+          background: 'rgba(15,23,42,0.72)',
+          color: '#ffffff',
+          fontSize: 34,
+          fontWeight: 700,
+        }}
+      >
+        Comment your answer 👇
+      </div>
+    </div>
+  );
+};
+
 /** 하단 CTA */
 export const Cta: React.FC<{ cta: string }> = ({ cta }) => {
   const frame = useCurrentFrame();
@@ -250,6 +299,18 @@ export const Cta: React.FC<{ cta: string }> = ({ cta }) => {
         transform: `translateY(${interpolate(enter, [0, 1], [40, 0])}px)`,
       }}
     >
+      {/* 로고는 흰 배경용으로 만들어진 마크라, 어두운 배경 위에서는 흰 알약에 얹는다 */}
+      <div
+        style={{
+          display: 'inline-block',
+          background: '#ffffff',
+          borderRadius: 22,
+          padding: '12px 26px',
+          marginBottom: 16,
+        }}
+      >
+        <Img src={staticFile('logo.png')} style={{ height: 56, display: 'block' }} />
+      </div>
       <div style={{ color: '#ffffff', fontSize: 44, fontWeight: 800 }}>{cta}</div>
       <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 30, marginTop: 8 }}>
         2,101 words · free · no sign-up

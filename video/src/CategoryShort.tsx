@@ -2,7 +2,7 @@ import React from 'react';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { CategoryQuestion } from './schema';
 import { SCENE } from './schema';
-import { Background, ChoiceRow, Cta, Header, Sound } from './parts';
+import { Background, ChoiceRow, CommentPrompt, Cta, Header, Sound } from './parts';
 import { FONT } from './theme';
 
 /**
@@ -79,6 +79,7 @@ export const CategoryShort: React.FC<CategoryQuestion> = ({
           ))}
         </div>
 
+        <CommentPrompt />
         <Cta cta={cta} />
       </AbsoluteFill>
     </AbsoluteFill>
