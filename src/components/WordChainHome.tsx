@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CountrySelector from './CountrySelector';
+import MockTestCta from './MockTestCta';
 import logo from '../assets/logo.png';
 import type { ThemeId } from '../data/vocab';
 import { AVAILABLE_THEMES, TOTAL_WORDS } from '../data/vocab';
@@ -292,6 +293,10 @@ const WordChainHome: React.FC<WordChainHomeProps> = ({
               </span>
             </li>
           </ol>
+        </div>
+
+        <div className="mt-6">
+          <MockTestCta />
         </div>
 
         <div className="mt-6 pb-4 text-center">

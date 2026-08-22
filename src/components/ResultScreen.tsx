@@ -1,4 +1,5 @@
 import { COUNTRIES } from '../data/countries';
+import MockTestCta from './MockTestCta';
 
 interface ResultScreenProps {
   score: number;
@@ -100,6 +101,10 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <MockTestCta />
         </div>
 
         {!hasName && (
